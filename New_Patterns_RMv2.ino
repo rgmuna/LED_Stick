@@ -5,7 +5,7 @@
 enum  pattern { NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE, RANDOM_PIXELS, 
                 FLASH_COLOR, SCROLL_COLOR, SCROLL_TWO_COLOR, SCROLL_TWO_COLOR_REVERSE, 
                 SCROLL_MIDDLE, SCROLL_MIDDLE_TWO_COLOR, SCROLL_ENDS, SCROLL_ENDS_TWO_COLOR, 
-                COLOR_BREATHE, COLOR_RAIN, BLOCK_DROP, COLOR_SWITCH, RANDOM_EATER};
+                COLOR_BREATHE, COLOR_RAIN, BLOCK_DROP, COLOR_SWITCH, RANDOM_EATER, RANDOM_FILL};
 // Patern directions supported:
 enum  direction { FORWARD, REVERSE };
 
@@ -86,6 +86,9 @@ class NeoPatterns : public Adafruit_NeoPixel
                     break;
                 case RANDOM_EATER:
                     RandomEaterUpdate();
+                    break;
+                case RANDOM_FILL:
+                    RandomFillUpdate();
                     break;
              
 //                case SCROLL_MIDDLE_TWO_COLOR:
@@ -617,6 +620,35 @@ class NeoPatterns : public Adafruit_NeoPixel
     Increment();
   }
 
+//-------------------- Random Pixels -----------------------------------------
+    void RandomFill(uint32_t color1, int interval) {
+      TotalSteps = numPixels();
+      Index = 0; 
+      ActivePattern = RANDOM_FILL;
+      Interval = interval;
+      Color1 = color1;
+      i = 0;      // A random pixel to update
+    }
+
+    // Update the Random Pixels pattern
+    void RandomFillUpdate() {
+      if (Index == 0) {
+        CleanPixels();
+      }
+
+      else {
+        while (true) {
+          i = random(numPixels()-1);
+          if (getPixelColor(i) == 0) {
+            setPixelColor(i, Color1);
+            break;
+          }
+        }
+      }
+      show();
+      Increment();
+    }
+    
 //--------------- 
 
 
@@ -897,7 +929,7 @@ void patternChoiceBank3() {
   switch(patternNumber) {
     case 1: pixels.TheaterChase(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 100);
             break;
-    case 2: //colorPurpleWalk();
+    case 2: pixels.RandomFill(pixels.Wheel(random(255)), 100);
             break;
     case 3: //colorAquaWalk();
             break;
