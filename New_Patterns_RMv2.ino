@@ -9,6 +9,24 @@ enum  pattern { NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE, R
 // Patern directions supported:
 enum  direction { FORWARD, REVERSE };
 
+const uint8_t PROGMEM Gamma[] = {
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
+    1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,
+    2,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,
+    5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  9,  9,  9, 10,
+   10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16,
+   17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25,
+   25, 26, 27, 27, 28, 29, 29, 30, 31, 32, 32, 33, 34, 35, 35, 36,
+   37, 38, 39, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 50,
+   51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68,
+   69, 70, 72, 73, 74, 75, 77, 78, 79, 81, 82, 83, 85, 86, 87, 89,
+   90, 92, 93, 95, 96, 98, 99,101,102,104,105,107,109,110,112,114,
+  115,117,119,120,122,124,126,127,129,131,133,135,137,138,140,142,
+  144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175,
+  177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
+  215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 };
+
 // NeoPattern Class - derived from the Adafruit_NeoPixel class
 class NeoPatterns : public Adafruit_NeoPixel
 {
@@ -72,10 +90,7 @@ class NeoPatterns : public Adafruit_NeoPixel
                 case SCROLL_MIDDLE:
                     ScrollMiddleUpdate();
                     break;
-                case COLOR_BREATHE:
-                    ColorBreatheUpdate();
-                    break;
-                case COLOR_RAIN:
+               case COLOR_RAIN:
                     ColorRainUpdate();
                     break;
                 case BLOCK_DROP:
@@ -141,9 +156,10 @@ class NeoPatterns : public Adafruit_NeoPixel
         }
     }
 
-//////////////////// PATTERNS ////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//                       PATTERNS 
 
-//------------------- Initialize for a RainbowCycle -----------------------------------------
+//------------------- RAINBOW CYCLE -----------------------------------------------------------------
     void RainbowCycle(uint8_t interval, direction dir = FORWARD)
     {
         ActivePattern = RAINBOW_CYCLE;
@@ -153,7 +169,6 @@ class NeoPatterns : public Adafruit_NeoPixel
         Direction = dir;
     }
 
-    // Update the Rainbow Cycle Pattern
     void RainbowCycleUpdate()
     {
         for(int i=0; i< numPixels(); i++)
@@ -164,7 +179,7 @@ class NeoPatterns : public Adafruit_NeoPixel
         Increment();
     }
 
- //-------------------- Initialize for a ColorWipe----------------------------------------------
+ //-------------------- COLOR WIPE -----------------------------------------------------------------
     void ColorWipe(uint32_t color1, uint32_t color2, uint8_t interval, direction dir = FORWARD)
     {
         ActivePattern = COLOR_WIPE;
@@ -176,7 +191,6 @@ class NeoPatterns : public Adafruit_NeoPixel
         Direction = dir;
     }
 
-    // Update the Color Wipe Pattern
     void ColorWipeUpdate()
     {
         if(Index < numPixels()){
@@ -189,7 +203,7 @@ class NeoPatterns : public Adafruit_NeoPixel
         Increment();
     }
 
-//-------------------- THEATER CHASE ---------------------------------------------------  
+//-------------------- THEATER CHASE --------------------------------------------------------------  
     void TheaterChase(uint32_t color1, uint32_t color2, uint8_t interval, direction dir = FORWARD)
     {
         ActivePattern = THEATER_CHASE;
@@ -201,7 +215,6 @@ class NeoPatterns : public Adafruit_NeoPixel
         Direction = dir;
    }
 
-   // Update the Theater Chase Pattern
     void TheaterChaseUpdate()
     {
       for(int i=0; i< numPixels(); i++)
@@ -219,7 +232,7 @@ class NeoPatterns : public Adafruit_NeoPixel
         Increment();
     }
 
-//-------------------- SCANNNER PATTERN -------------------------------------------------
+//-------------------- SCANNNER PATTERN -------------------------------------------------------
     void Scanner(uint32_t color1, uint8_t interval)
     {
         ActivePattern = SCANNER;
@@ -229,18 +242,17 @@ class NeoPatterns : public Adafruit_NeoPixel
         Index = 0;
     }
 
-    // Update the Scanner Pattern
     void ScannerUpdate()
     {   
       for (int i = 0; i < numPixels(); i++)
         {
             if (i == Index) // first half of the scan
             {
-                setPixelColor(i, Color1);
+                setPixelColor(i, Wheel(((i * 256 / numPixels()) + Index) & 255));
             }
             else if (i == TotalSteps - Index) // The return trip.
             {
-                setPixelColor(i, Color1);
+                setPixelColor(i, Wheel(((i * 256 / numPixels()) + Index) & 255));
             }
             else  // fade to black
             {
@@ -252,7 +264,7 @@ class NeoPatterns : public Adafruit_NeoPixel
         Increment();
     }
 
-//-------------------- FADE -----------------------------------------
+//-------------------- FADE -------------------------------------------------------------------
     void Fade(uint32_t color1, uint32_t color2, uint16_t steps, uint8_t interval, direction dir = FORWARD)
     {
         ActivePattern = FADE;
@@ -282,14 +294,13 @@ class NeoPatterns : public Adafruit_NeoPixel
 // Custom Patterns Begin              Custom Patterns Begin                        Custom Patterns Begin                Custom Patterns Begin
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//-------------------- Random Pixels -----------------------------------------
+//-------------------- Random Pixels ----------------------------------------------------------
     void RandomPixels(int interval, int steps) {
       ActivePattern = RANDOM_PIXELS;
       Interval = interval;
       TotalSteps = steps;
     }
 
-    // Update the Random Pixels pattern
     void RandomPixelsUpdate() {
       setPixelColor(random(numPixels()-1), Wheel(random(255)));
       setPixelColor(random(numPixels()-1), 0);
@@ -297,7 +308,7 @@ class NeoPatterns : public Adafruit_NeoPixel
       Increment();
     }
 
-//-------------------- Random Pixels -----------------------------------------++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//-------------------- Random Pixels ------------------------------------------------------
   void RandomEater(uint32_t color1, uint32_t color2, int interval, direction dir = FORWARD){
     ActivePattern = RANDOM_EATER;
     Interval = interval;
@@ -329,7 +340,7 @@ class NeoPatterns : public Adafruit_NeoPixel
   }
   
 
-//-------------------- Two-color scroll (or ColorWipe) -----------------------------------------
+//-------------------- SCROLL TWO COLOR -----------------------------------------------
     void ScrollTwoColor(uint32_t color1, uint32_t color2, uint8_t interval, direction dir = FORWARD)
     {
         ActivePattern = SCROLL_TWO_COLOR;
@@ -411,7 +422,7 @@ class NeoPatterns : public Adafruit_NeoPixel
       Increment();
     }
 
-//-------------------- Scroll out from middle to ends -----------------------------------------
+//-------------------- SCROLL MIDDLE ---------------------------------------------------------
     void ScrollMiddle(uint32_t color1, uint32_t color2, uint8_t interval, direction dir = FORWARD) {
       ActivePattern = SCROLL_MIDDLE;
       Interval = interval;
@@ -439,120 +450,145 @@ class NeoPatterns : public Adafruit_NeoPixel
       Increment();
     }
     
-//-------------------- Single Color color dims from top to bottom ----------------------------
-  void ColorRain(uint32_t color1, uint8_t interval, direction dir = FORWARD) {
+//-------------------- COLOR RAIN---------------------------------------------------------
+    
+    void ColorRain(uint32_t color1, uint32_t color2,  uint8_t interval, direction dir = FORWARD) {
       ActivePattern = COLOR_RAIN;
       Interval = interval;
       TotalSteps = numPixels()+5;
       Color1 = color1;
+      Color2 = color2;
       Index = 0;
       Direction = dir;
   }
   
   void ColorRainUpdate(){
-    int colorLess = .75;
-    int colorLesser = .66;
-    int colorLeast = .5; 
+    int rainSize = 5;
     
-    for (int i = 0; i < numPixels(); i++) {
-       setPixelColor(i, DimColorMore(Color1));
-    }
-    if (Index == 0) {
-      setPixelColor(Index, Color1*colorLesser);
+    for(i=0; i<=rainSize; i++){
+      setPixelColor(Index+i-30, Color1);
+      setPixelColor(Index+i-rainSize-30, DimControl(Color2, 10));
+      setPixelColor(Index+i-rainSize, Color1);
+      setPixelColor(Index+i-rainSize-rainSize, DimControl(Color2, 10));
+      setPixelColor(Index+i+27, Color1);
+      setPixelColor(Index+i-rainSize+27, DimControl(Color2, 10));
     }
     
-    else if (Index == 1) {
-      setPixelColor(Index+29, DimColorMore(Color1));
-      setPixelColor(Index+30, DimColor(Color1));
-      setPixelColor(Index+31, Color1);
-      setPixelColor(Index+32, DimColor(Color1));
-      setPixelColor(Index+33, DimColorMore(Color1));
-      setPixelColor(Index, DimColorMore(Color1));
-      setPixelColor(Index-1, DimColor(Color1));
-    }
-    else if (Index == 2) {
-      setPixelColor(Index+29, DimColorMore(Color1));
-      setPixelColor(Index+30, DimColor(Color1));
-      setPixelColor(Index+31, Color1);
-      setPixelColor(Index+32, DimColor(Color1));
-      setPixelColor(Index+33, DimColorMore(Color1));
-      setPixelColor(Index, DimColorMore(Color1));
-      setPixelColor(Index-1, DimColor(Color1));
-      setPixelColor(Index-2, Color1);
-    }
-    else if (Index == 3) {
-      setPixelColor(Index+29, DimColorMore(Color1));
-      setPixelColor(Index+30, DimColor(Color1));
-      setPixelColor(Index+31, Color1);
-      setPixelColor(Index+32, DimColor(Color1));
-      setPixelColor(Index+33, DimColorMore(Color1));
-      setPixelColor(Index, DimColorMore(Color1));
-      setPixelColor(Index-1, DimColor(Color1));
-      setPixelColor(Index-2, Color1);
-      setPixelColor(Index-3, DimColor(Color1));
-    }
-    else if (Index == 4) {
-      setPixelColor(Index+29, DimColorMore(Color1));
-      setPixelColor(Index+30, DimColor(Color1));
-      setPixelColor(Index+31, Color1);
-      setPixelColor(Index+32, DimColor(Color1));
-      setPixelColor(Index+33, DimColorMore(Color1));
-      setPixelColor(Index, DimColorMore(Color1));
-      setPixelColor(Index-1, DimColor(Color1));
-      setPixelColor(Index-2, Color1);
-      setPixelColor(Index-3, DimColor(Color1));
-      setPixelColor(Index-5, DimColorMore(Color1));
-    }
-    else if (Index == 27) {
-      setPixelColor(Index+29, DimColorMore(Color1));
-      setPixelColor(Index+30, DimColor(Color1));
-      setPixelColor(Index+31, Color1);
-      setPixelColor(Index+32, DimColor(Color1));
-      setPixelColor(Index+33, DimColorMore(Color1));
-      setPixelColor(Index, DimColorMore(Color1));
-      setPixelColor(Index-1, DimColor(Color1));
-      setPixelColor(Index-2, Color1);
-      setPixelColor(Index-3, DimColor(Color1));
-      setPixelColor(Index-5, DimColorMore(Color1));
-      setPixelColor(Index-6, DimColorMost(Color1));  
-  }
-    else {
-      setPixelColor(Index-27, DimColorMore(Color1));
-      setPixelColor(Index-28, DimColor(Color1));
-      setPixelColor(Index-29, Color1);
-      setPixelColor(Index-30, DimColor(Color1));
-      setPixelColor(Index-31, DimColorMore(Color1));
-      setPixelColor(Index, DimColorMore(Color1));
-      setPixelColor(Index-1, DimColor(Color1));
-      setPixelColor(Index-2, Color1);
-      setPixelColor(Index-3, DimColor(Color1));
-      setPixelColor(Index-5, DimColorMore(Color1));
-      setPixelColor(Index-6, DimColorMost(Color1));
-      setPixelColor(Index+29, DimColorMore(Color1));
-      setPixelColor(Index+30, DimColor(Color1));
-      setPixelColor(Index+31, Color1);
-      setPixelColor(Index+32, DimColor(Color1));
-      setPixelColor(Index+33, DimColorMore(Color1));
-    }
     show();
     Increment();
-    }
-    
-//-------------------- Color Breathe-------------------------------------------- 
-  void ColorBreathe(uint32_t color1, uint8_t interval, direction dir = FORWARD) {
-      ActivePattern = COLOR_BREATHE;
-      Interval = interval;
-      TotalSteps = numPixels();
-      Color1 = color1;
-      Index = 0;
-      Direction = dir;
   }
+    
+//-------------------- Color Breathe------------------------------------------------- 
+//  void ColorBreathe(uint32_t color1, uint8_t interval, direction dir = FORWARD) {
+//      ActivePattern = COLOR_BREATHE;
+//      Interval = interval;
+//      TotalSteps = 18;
+//      Color1 = color1;
+//      Index = 0;
+//      Direction = dir;
+//  }
 
-  void ColorBreatheUpdate() {
-   
-    show();
-    Increment();
-}
+//  void ColorBreatheUpdate() {
+//    int LED1[] = {1,	1,	1,	2,	2,	2,	3,	5,	255};
+//    int LED2[] = {1,	1,	1,	2,	2,	2,	3,	4,	33};
+//    int LED3[] = {1,	1,	1,	2,	2,	2,	3,	3,	9};
+//    int LED4[] = {1,	1,	2,	2,	2,	2,	2,	3,	4};
+//    int LED5[] = {2,	2,	2,	2,	2,	2,	2,	2,	2};
+//    int LED6[] = {2,	2,	2,	2,	2,	2,	2,	2,	2};
+//    int LED7[] = {4,	3,	3,	2,	2,	2,	2,	2,	1};
+//    int LED8[] = {9,	5,	3,	3,	2,	2,	2,	1,	1};
+//    int LED9[] = {33,	7,	4,	3,	2,	2,	2,	1,	1};
+//    int LED10[] = {255,	9,	5,	3,	2,	2,	2,	1,	1};
+//    int LED11[] = {33,	7,	4,	3,	2,	2,	2,	1,	1};
+//    int LED12[] = {9,	5,	3,	3,	2,	2,	2,	1,	1};
+//    int LED13[] = {4,	3,	3,	2,	2,	2,	2,	2,	1};
+//    int LED14[] = {2,	3,	3,	3,	3,	3,	3,	4,	2};
+//    int LED15[] = {2,	2,	2,	2,	2,	2,	2,	2,	2};
+//    int LED16[] = {1,	1,	2,	2,	2,	2,	2,	3,	4};
+//    int LED17[] = {1,	1,	1,	2,	2,	2,	3,	3,	9};
+//    int LED18[] = {1,	1,	1,	2,	2,	2,	3,	4,	255};
+//    
+//    if(Index<TotalSteps/2){
+//      i = Index;
+//    }
+//     else{
+//       i = TotalSteps-Index;
+//     }
+//       //pixel 1
+//       setPixelColor(1, DimControl(Color1, LED1[i]));
+//       setPixelColor(19, DimControl(Color1, LED1[i]));
+//       setPixelColor(37, DimControl(Color1, LED1[i]));
+//       //pixel 2
+//       setPixelColor(2, DimControl(Color1, LED2[i]));
+//       setPixelColor(20, DimControl(Color1, LED2[i]));
+//       setPixelColor(38, DimControl(Color1, LED2[i]));
+//       //pixel 3
+//       setPixelColor(3, DimControl(Color1, LED3[i]));
+//       setPixelColor(21, DimControl(Color1, LED3[i]));
+//       setPixelColor(39, DimControl(Color1, LED3[i]));
+//       //pixel 4
+//       setPixelColor(4, DimControl(Color1, LED4[i]));
+//       setPixelColor(22, DimControl(Color1, LED4[i]));
+//       setPixelColor(40, DimControl(Color1, LED4[i]));
+//       //pixel 5
+//       setPixelColor(5, DimControl(Color1, LED5[i]));
+//       setPixelColor(23, DimControl(Color1, LED5[i]));
+//       setPixelColor(41, DimControl(Color1, LED5[i]));
+//       //pixel 6
+//       setPixelColor(6, DimControl(Color1, LED6[i]));
+//       setPixelColor(24, DimControl(Color1, LED6[i]));
+//       setPixelColor(42, DimControl(Color1, LED6[i]));
+//       //pixel 7
+//       setPixelColor(7, DimControl(Color1, LED7[i]));
+//       setPixelColor(25, DimControl(Color1, LED7[i]));
+//       setPixelColor(43, DimControl(Color1, LED7[i]));
+//       //pixel 8
+//       setPixelColor(8, DimControl(Color1, LED8[i]));
+//       setPixelColor(26, DimControl(Color1, LED8[i]));
+//       setPixelColor(44, DimControl(Color1, LED8[i]));
+//       //pixel 9
+//       setPixelColor(9, DimControl(Color1, LED9[i]));
+//       setPixelColor(27, DimControl(Color1, LED9[i]));
+//       setPixelColor(45, DimControl(Color1, LED9[i]));
+//       //pixel 10
+//       setPixelColor(10, DimControl(Color1, LED10[i]));
+//       setPixelColor(28, DimControl(Color1, LED10[i]));
+//       setPixelColor(46, DimControl(Color1, LED10[i]));
+//       //pixel 11
+//       setPixelColor(11, DimControl(Color1, LED11[i]));
+//       setPixelColor(29, DimControl(Color1, LED11[i]));
+//       setPixelColor(47, DimControl(Color1, LED11[i]));
+//       //pixel 12
+//       setPixelColor(12, DimControl(Color1, LED12[i]));
+//       setPixelColor(30, DimControl(Color1, LED12[i]));
+//       setPixelColor(48, DimControl(Color1, LED12[i]));
+//       //pixel 13
+//       setPixelColor(13, DimControl(Color1, LED13[i]));
+//       setPixelColor(31, DimControl(Color1, LED13[i]));
+//       setPixelColor(49, DimControl(Color1, LED13[i]));
+//       //pixel 14
+//       setPixelColor(14, DimControl(Color1, LED14[i]));
+//       setPixelColor(32, DimControl(Color1, LED14[i]));
+//       setPixelColor(50, DimControl(Color1, LED14[i]));
+//       //pixel 15
+//       setPixelColor(15, DimControl(Color1, LED15[i]));
+//       setPixelColor(33, DimControl(Color1, LED15[i]));
+//       setPixelColor(51, DimControl(Color1, LED15[i]));
+//       //pixel 16
+//       setPixelColor(16, DimControl(Color1, LED16[i]));
+//       setPixelColor(34, DimControl(Color1, LED16[i]));
+//       setPixelColor(52, DimControl(Color1, LED16[i]));
+//       //pixel 17
+//       setPixelColor(17, DimControl(Color1, LED17[i]));
+//       setPixelColor(35, DimControl(Color1, LED17[i]));
+//       setPixelColor(53, DimControl(Color1, LED17[i]));
+//       //pixel 18
+//       setPixelColor(18, DimControl(Color1, LED18[i]));
+//       setPixelColor(36, DimControl(Color1, LED18[i]));
+//      
+//   show();
+//   Increment();
+//}
 
 //-------------------- Block Drop --------------------------------------------------
   void BlockDrop(uint32_t color1, uint8_t interval, direction dir = FORWARD){
@@ -576,7 +612,7 @@ class NeoPatterns : public Adafruit_NeoPixel
        Counter2=0;
      }
     i = Index - Counter; 
-    setPixelColor(i, Color1);
+    setPixelColor(i, Wheel(((i * 256 / numPixels()) + Index) & 255));
     setPixelColor(i-1, 0);
       
     if(i>numPixels()-2-Counter2){
@@ -601,9 +637,7 @@ class NeoPatterns : public Adafruit_NeoPixel
         Direction = dir; 
   }  
 
-  void ColorSwitchUpdate(){
-    setPixelColor(TotalSteps/2, Color2);
-    
+  void ColorSwitchUpdate(){ 
     if(Index == 0){
       CleanPixels();
     }
@@ -620,7 +654,7 @@ class NeoPatterns : public Adafruit_NeoPixel
     Increment();
   }
 
-//-------------------- Random Pixels -----------------------------------------
+//-------------------- Random Fill -----------------------------------------
     void RandomFill(uint32_t color1, int interval) {
       TotalSteps = numPixels();
       Index = 0; 
@@ -698,25 +732,44 @@ class NeoPatterns : public Adafruit_NeoPixel
 
     // Input a value 0 to 255 to get a color value.
     // The colours are a transition r - g - b - back to r.
+//    uint32_t Wheel2(byte WheelPos)
+//    {
+//        WheelPos = 255 - WheelPos;
+//        if(WheelPos < 85)
+//        {
+//            return Color(255 - WheelPos * 3, 0, WheelPos * 3);
+//        }
+//        else if(WheelPos < 170)
+//        {
+//            WheelPos -= 85;
+//            return Color(0, WheelPos * 3, 255 - WheelPos * 3);
+//        }
+//        else
+//        {
+//            WheelPos -= 170;
+//            return Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+//        }
+//    }
+//     
+   
     uint32_t Wheel(byte WheelPos)
     {
         WheelPos = 255 - WheelPos;
         if(WheelPos < 85)
         {
-            return Color(255 - WheelPos * 3, 0, WheelPos * 3);
+            return Color(pgm_read_byte(&Gamma[255 - WheelPos * 3]), 0, pgm_read_byte(&Gamma[WheelPos * 3]));
         }
         else if(WheelPos < 170)
         {
             WheelPos -= 85;
-            return Color(0, WheelPos * 3, 255 - WheelPos * 3);
+            return Color(0, pgm_read_byte(&Gamma[WheelPos * 3]), pgm_read_byte(&Gamma[255 - WheelPos * 3]));
         }
         else
         {
             WheelPos -= 170;
-            return Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+            return Color(pgm_read_byte(&Gamma[WheelPos * 3]), pgm_read_byte(&Gamma[255 - WheelPos * 3]), 0);
         }
     }
-
         // Reverse direction of the pattern
     void Reverse()
     {
@@ -763,6 +816,7 @@ volatile int patternNumber = 0; // keeps track of pattern
 volatile int bankNumber = 1; //keeps track of both buttons being pressed
 //volatile int brightnessNumber = 0; //keeps track of brightness level
 volatile int brightnessNumber = 255;
+volatile int colorLock = 0;
 
 //variables to keep track of the timing of recent interrupts
 unsigned long button_time_pattern = 0;  
@@ -793,8 +847,8 @@ int wait = 80;
 int numberBanks = 3; //set this to the number of banks
 int numberBrightnessLevels = 9; //set this to number of bightness levels
 
-int numberPatterns1 = 5;
-int numberPatterns2 = 6;
+int numberPatterns1 = 6;
+int numberPatterns2 = 11;
 int numberPatterns3 = 3;
 
 int brightnessLevels[] = {255, 191, 127, 64, 40, 20, 10, 5, 2, 0}; //Set to maximum brightness
@@ -853,27 +907,35 @@ void loop() {
 }
 
 void pixelsComplete() {
-  pixels.Update(); //Color1 = pixels.Wheel(random(255));
-  pixels.Color1 = pixels.Wheel(random(255));
-  pixels.Color2 = pixels.Wheel(random(255));
+  if(colorLock == 0){
+    pixels.Color1 = pixels.Wheel(random(255));
+    pixels.Color2 = pixels.Wheel(random(255));
+    pixels.Update();
+  }
+  else {
+    pixels.Update(); //Color1 = pixels.Wheel(random(255));
+  }
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//// PATTERN CALLS 
+//// BUTTON LOGIC
 ///////////////////////////////////////////////////////////////////////////////
-//
+
 void bankChoice() {
   switch(bankNumber) {
-    case 1: patternChoiceBank1();
+    case 1: colorLock = 1;
+            patternChoiceBank1();
             break;
-    case 2: patternChoiceBank2();
+    case 2: colorLock = 0;
+            patternChoiceBank2();
             break;
-    case 3: patternChoiceBank3();
+    case 3: colorLock = 0;
+            patternChoiceBank3();
             break;  
   }
 }
-
+//------------------------------------------BANK 1-----------------------------
 void patternChoiceBank1() {
   pixels.CleanPixels();
   pixels.Index = 0;
@@ -881,50 +943,72 @@ void patternChoiceBank1() {
   switch(patternNumber) {
 
     case 1:
-            pixels.ColorSwitch(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 40);
-            break;   
+            pixels.RainbowCycle(40);
+            break;  
     case 2: 
-            pixels.ScrollTwoColor(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 40);
-            break;
+            pixels.ColorRain(pixels.Wheel(255), pixels.Wheel(255), 40);
+            break;      
     case 3: 
-            pixels.ColorRain(pixels.Wheel(random(255)), 40);
+            pixels.ColorRain(pixels.Wheel(70), pixels.Wheel(70), 40);
             break;
     case 4:
-            pixels.ColorBreathe(pixels.Wheel(random(255)), 40);
+            pixels.ColorRain(pixels.Wheel(170), pixels.Wheel(170), 40);
             break;
-    case 5:
+   case 5:
+            pixels.ColorRain(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 40);
+            break;
+    case 6:
             pixels.Fade(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 100, 100);
             break;
            
   }
 }
 
+//------------------------------------------BANK 2-----------------------------
 void patternChoiceBank2() {
   pixels.CleanPixels();
   pixels.Index = 0;
   
   switch(patternNumber) {
-    case 1: 
-            pixels.RainbowCycle(40);
+    case 1:
+            pixels.TheaterChase(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 100);
             break;
     case 2: 
+            pixels.ColorSwitch(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 40);
+            break; 
+    case 3: 
+            pixels.ColorSwitch(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 20);
+            break; 
+    case 4: 
             pixels.ColorWipe(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 40);
             break;
-    case 3: 
+    case 5: 
+            pixels.ColorWipe(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 10);
+            break;
+    case 6: 
             pixels.ScrollMiddle(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 40);
             break;
-    case 4:
-            pixels.BlockDrop(pixels.Wheel(random(255)), 20);
+    case 7: 
+            pixels.ScrollMiddle(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 10);
             break;
-    case 5: 
+    case 8:
+            pixels.BlockDrop(pixels.Wheel(random(255)), 250);
+            break;
+    case 9:
+            pixels.BlockDrop(pixels.Wheel(random(255)), 10);
+            break;
+    case 10: 
             pixels.Scanner(pixels.Wheel(random(255)), 40);
             break;
-    case 6:
-            pixels.RandomEater(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 100);
+    case 11: 
+            pixels.Scanner(pixels.Wheel(random(255)), 10);
             break;
+       
+    
   }
 }
 
+//------------------------------------------BANK 3-----------------------------
 void patternChoiceBank3() {
   switch(patternNumber) {
     case 1: pixels.TheaterChase(pixels.Wheel(random(255)), pixels.Wheel(random(255)), 100);
